@@ -1,0 +1,564 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.3.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.3.0" type="image/png" sizes="32x32"><meta name="description" content="一，Docker概述       一款产品，肯定有两种环境，一个开发环境，一个上线环境。开发 ，运维。境配置是十分麻烦的，每一个机器都要去部署环境。费事费力。传统：开发jar，运维来做现在：开发打包部署上线，一套流程做完。打包项目带上环境。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker基础">
+<meta property="og:url" content="https://qponahuijiuy.github.io/posts/1d9fbb6a/index.html">
+<meta property="og:site_name" content="Mutong Notes">
+<meta property="og:description" content="一，Docker概述       一款产品，肯定有两种环境，一个开发环境，一个上线环境。开发 ，运维。境配置是十分麻烦的，每一个机器都要去部署环境。费事费力。传统：开发jar，运维来做现在：开发打包部署上线，一套流程做完。打包项目带上环境。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3069260641,2223620122&fm=26&gp=0.jpg">
+<meta property="og:image" content="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=268974649,2607019911&fm=26&gp=0.jpg">
+<meta property="article:published_time" content="2020-11-28T01:14:09.577Z">
+<meta property="article:modified_time" content="2020-11-28T02:32:19.377Z">
+<meta property="article:author" content="Mutong">
+<meta property="article:tag" content="Docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3069260641,2223620122&fm=26&gp=0.jpg"><title>Docker基础 | Mutong Notes</title><link ref="canonical" href="https://qponahuijiuy.github.io/posts/1d9fbb6a/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.3.0"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: ["google","bing","baidu"],
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":false},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"light","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":false},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 5.2.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/archives/"><span class="header-nav-menu-item__icon"><i class="fas fa-folder-open"></i></span><span class="header-nav-menu-item__text">归档</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/categories/"><span class="header-nav-menu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-menu-item__text">分类</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/tags/"><span class="header-nav-menu-item__icon"><i class="fas fa-tags"></i></span><span class="header-nav-menu-item__text">标签</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/reading/"><span class="header-nav-menu-item__icon"><i class="fas fa-book"></i></span><span class="header-nav-menu-item__text">阅读</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/about/"><span class="header-nav-menu-item__icon"><i class="fas fa-user"></i></span><span class="header-nav-menu-item__text">关于我</span></a></div></div><div class="header-nav-search"><span class="header-nav-search__icon"><i class="fas fa-search"></i></span><span class="header-nav-search__text">搜索</span></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">Mutong Notes</div><div class="header-banner-info__subtitle">愿一直遇到有趣的人和事</div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">Docker基础</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2020-11-28</span></span><span class="post-meta-item post-meta-item--updatetime"><span class="post-meta-item__icon"><i class="far fa-calendar-check"></i></span><span class="post-meta-item__info">更新于</span><span class="post-meta-item__value">2020-11-28</span></span><span class="post-meta-item post-meta-item--visitors"><span class="post-meta-item__icon"><i class="fas fa-eye"></i></span><span class="post-meta-item__info">阅读次数</span><span class="post-meta-item__value" id="busuanzi_value_page_pv"></span></span></div></header><div class="post-body">
+        <h3 id="一，Docker概述"   >
+          <a href="#一，Docker概述" class="heading-link"><i class="fas fa-link"></i></a>一，Docker概述</h3>
+      <p>一款产品，肯定有两种环境，一个开发环境，一个上线环境。开发 ，运维。<br>境配置是十分麻烦的，每一个机器都要去部署环境。费事费力。<br>传统：开发jar，运维来做<br>现在：开发打包部署上线，一套流程做完。打包项目带上环境。</p>
+<a id="more"></a>
+
+        <h3 id="二，DevOps"   >
+          <a href="#二，DevOps" class="heading-link"><i class="fas fa-link"></i></a>二，DevOps</h3>
+      <p><strong>应用更快速的交付和部署</strong></p>
+<p>传统：一堆帮助文档，安装程序</p>
+<p>Docker：打包镜像发布测试，一键运行</p>
+<p><strong>更便捷的升级和扩容</strong></p>
+<p>使用了Docker之后，我们的部署就像搭积木一样</p>
+<p>项目打包为一个镜像，扩展服务器A，扩展服务器B直接升级，不用给里面一个工具进行升级</p>
+<p><strong>更简单的系统运维</strong></p>
+<p>在容器化之后，我们的开发，测试环境是高度一致的</p>
+<p><strong>更高效的计算资源利用</strong></p>
+<p>Docker是内核级别的虚拟化技术，可以在一个物理机上运行多个容器实例。</p>
+
+        <h3 id="三，Docker的安装"   >
+          <a href="#三，Docker的安装" class="heading-link"><i class="fas fa-link"></i></a>三，Docker的安装</h3>
+      <p><img src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3069260641,2223620122&fm=26&gp=0.jpg"></p>
+<p>仓库（repository）</p>
+<p>仓库就是用来存放镜像的地方</p>
+<p>镜像（image）</p>
+<p>docker镜像就好比是一个末班，可以通过这个模板来创建容器服务。</p>
+<p>容器（container）</p>
+<p>就是一个微小的linux操作系统，我们可以把项目发布在一个容器里面。</p>
+<blockquote>
+<p>环境查看</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 内核版本为 3.10</span></span><br><span class="line">[root@jinggengchen /]<span class="comment"># uname -r</span></span><br><span class="line">3.10.0-514.26.2.el7.x86_64</span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+<blockquote>
+<p>安装</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1 卸载旧的版本</span></span><br><span class="line">yum remove docker \</span><br><span class="line">                  docker-client \</span><br><span class="line">                  docker-client-latest \</span><br><span class="line">                  docker-common \</span><br><span class="line">                  docker-latest \</span><br><span class="line">                  docker-latest-logrotate \</span><br><span class="line">                  docker-logrotate \</span><br><span class="line">                  docker-engine</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2 安装必要的工具</span></span><br><span class="line">yum install -y yum-utils</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3 设置镜像的仓库</span></span><br><span class="line">yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">    </span><br><span class="line">yum makecache fast</span><br><span class="line"><span class="comment"># 4 安装docker   </span></span><br><span class="line">yum install docker-ce docker-ce-cli containerd.io</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5 启动docker</span></span><br><span class="line">systemctl start docker</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6 查看安装</span></span><br><span class="line">docker version</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7 运行hello world</span></span><br><span class="line">docker run hello-world</span><br><span class="line"></span><br><span class="line"><span class="comment"># 8 查看镜像</span></span><br><span class="line">docker images</span><br><span class="line"></span><br><span class="line"><span class="comment"># 9 卸载docker，删除资源</span></span><br><span class="line">yum remove docker-ce docker-ce-cli containerd.io</span><br><span class="line">rm -rf /var/lib/docker</span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+<blockquote>
+<p>设置阿里云镜像加速</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir -p /etc/docker</span><br><span class="line"></span><br><span class="line">sudo tee /etc/docker/daemon.json &lt;&lt;-<span class="string">&#x27;EOF&#x27;</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;registry-mirrors&quot;</span>: [<span class="string">&quot;https://qau9aoqi.mirror.aliyuncs.com&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sudo systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">sudo systemctl restart docker</span><br></pre></td></tr></table></div></figure>
+
+<blockquote>
+<p>docker卸载</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@jinggengchen ~]<span class="comment"># systemctl stop docker</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># yum -y remove docker-ce docker-ce-cli containerd.io</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># rm -rf /var/lib/docker</span></span><br></pre></td></tr></table></div></figure>
+
+
+
+
+        <h3 id="四，Docker命令"   >
+          <a href="#四，Docker命令" class="heading-link"><i class="fas fa-link"></i></a>四，Docker命令</h3>
+      <p><strong>基本信息</strong></p>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 显示docker的版本</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker version</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 显示docker的系统信息</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker info</span></span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+<p><strong>镜像命令</strong></p>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 显示本机docker镜像</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker images</span></span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">hello-world         latest              bf756fb1ae65        5 months ago        13.3kB</span><br><span class="line"><span class="comment"># 可选项</span></span><br><span class="line">Options:</span><br><span class="line">  -a, --all            <span class="comment"># Show all images (default hides intermediate images)</span></span><br><span class="line">  -q, --quiet          <span class="comment"># Only show numeric IDs</span></span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 镜像搜索</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker search mysql</span></span><br><span class="line"><span class="comment"># 可选项</span></span><br><span class="line">Options:</span><br><span class="line">  -f, --filter filter   Filter output based on conditions provided</span><br><span class="line">      --format string   Pretty-print search using a Go template</span><br><span class="line">      --<span class="built_in">limit</span> int       Max number of search results (default 25)</span><br><span class="line">      --no-trunc        Don<span class="string">&#x27;t truncate output</span></span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 镜像拉取</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker pull mysql</span></span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 镜像删除</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker rmi -f [IDs] or [name]</span></span><br><span class="line"><span class="comment"># 删除全部的容器</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker rmi -f $(docker images -aq)</span></span><br></pre></td></tr></table></div></figure>
+
+<p><strong>容器命令</strong> </p>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 容器启动</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker run </span></span><br><span class="line">Usage:	docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</span><br><span class="line">Options:</span><br><span class="line">  -d   <span class="comment"># 后台方式运行</span></span><br><span class="line">  -it  <span class="comment"># 使用交互方式运行，进入容器查看内容</span></span><br><span class="line">  -p   <span class="comment"># 指定容器的端口</span></span><br><span class="line">  	-p ip：主机端口：容器端口</span><br><span class="line">   </span><br><span class="line"><span class="comment"># 查看哪些容器启动</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker ps </span></span><br><span class="line">Options:</span><br><span class="line">  -a   <span class="comment"># 列出当前正在运行的容器+曾经运行过得容器</span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># 启动，重启，停止，杀死</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker start [IDs]</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker restart [IDs]</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker stop [IDs]</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker kill [IDs]</span></span><br><span class="line"><span class="comment"># 删除容器</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker rm [IDs]</span></span><br></pre></td></tr></table></div></figure>
+
+<p><strong>常用的其他命令</strong></p>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 后台启动命令</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker run -d centos 后台启动了，必须要有一个前台进程。</span></span><br><span class="line">349142a6db81412664cfb6a2bd583d596b58636ba7dfb319912fe114f857b3e2</span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker ps</span></span><br><span class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</span><br><span class="line"><span class="comment"># 查看容器中的进程信息</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker top [IDs]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看容器日志</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker logs -f -t --tail [IDs]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看容器相关信息</span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker inspect [ID]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 从容器里面拷贝出主机 # docker cp [ID] 文件所在的容器内的路径 主机路径 </span></span><br><span class="line">[root@jinggengchen ~]<span class="comment"># docker cp [ID]:/home/test.java /home</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝是一个手动的过程，我们可以使用 -v卷的计数，可以实现同步</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="五，容器数据卷"   >
+          <a href="#五，容器数据卷" class="heading-link"><i class="fas fa-link"></i></a>五，容器数据卷</h3>
+      <p>将应用和环境打包成一个镜像</p>
+<p>容器之间可以有一个数据共享的计数，Docker哦容器产生的数据，同步到本地。</p>
+<p>这就是卷技术，目录的挂载，将我们的容器内的目录，挂载到Linux上面！</p>
+<p>Dockerfile就是用来构建docker镜像的构建文件，它是一个命令脚本，</p>
+<p>同时使用容器卷可以实现多个容器之间数据的共享</p>
+<blockquote>
+<p>编写dockerfile脚本</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">FROM centos</span><br><span class="line"></span><br><span class="line">VOLUME [<span class="string">&quot;volume01&quot;</span>,<span class="string">&quot;volume02&quot;</span>] <span class="comment"># 匿名挂载</span></span><br><span class="line"></span><br><span class="line">CMD <span class="built_in">echo</span> <span class="string">&quot;---END---&quot;</span></span><br><span class="line"></span><br><span class="line">CMD /bin/bash</span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@jinggengchen docker-volume]<span class="comment"># docker build -f dockerfile -t jgc/centos:1.0 .</span></span><br></pre></td></tr></table></div></figure>
+
+<blockquote>
+<p>进入到自己写的镜像</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@jinggengchen docker-volume]<span class="comment"># docker run -it a71c786ce39b /bin/bash</span></span><br><span class="line">[root@0903e81de862 /]<span class="comment"># ll</span></span><br><span class="line">bash: ll: <span class="built_in">command</span> not found</span><br><span class="line">[root@0903e81de862 /]<span class="comment"># ls -l</span></span><br><span class="line">total 56</span><br><span class="line">lrwxrwxrwx  1 root root    7 May 11  2019 bin -&gt; usr/bin</span><br><span class="line">drwxr-xr-x  5 root root  360 Jun 23 02:57 dev</span><br><span class="line">drwxr-xr-x  1 root root 4096 Jun 23 02:57 etc</span><br><span class="line">drwxr-xr-x  2 root root 4096 May 11  2019 home</span><br><span class="line">lrwxrwxrwx  1 root root    7 May 11  2019 lib -&gt; usr/lib</span><br><span class="line">lrwxrwxrwx  1 root root    9 May 11  2019 lib64 -&gt; usr/lib64</span><br><span class="line">drwx------  2 root root 4096 Jan 13 21:48 lost+found</span><br><span class="line">drwxr-xr-x  2 root root 4096 May 11  2019 media</span><br><span class="line">drwxr-xr-x  2 root root 4096 May 11  2019 mnt</span><br><span class="line">drwxr-xr-x  2 root root 4096 May 11  2019 opt</span><br><span class="line">dr-xr-xr-x 84 root root    0 Jun 23 02:57 proc</span><br><span class="line">dr-xr-x---  2 root root 4096 Jan 13 21:49 root</span><br><span class="line">drwxr-xr-x 11 root root 4096 Jan 13 21:49 run</span><br><span class="line">lrwxrwxrwx  1 root root    8 May 11  2019 sbin -&gt; usr/sbin</span><br><span class="line">drwxr-xr-x  2 root root 4096 May 11  2019 srv</span><br><span class="line">dr-xr-xr-x 13 root root    0 Jun 23 02:57 sys</span><br><span class="line">drwxrwxrwt  7 root root 4096 Jan 13 21:49 tmp</span><br><span class="line">drwxr-xr-x 12 root root 4096 Jan 13 21:49 usr</span><br><span class="line">drwxr-xr-x 20 root root 4096 Jan 13 21:49 var</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jun 23 02:57 volume01</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jun 23 02:57 volume02</span><br><span class="line">[root@0903e81de862 /]<span class="comment"># </span></span><br></pre></td></tr></table></div></figure>
+
+<blockquote>
+<p>本机的挂载地址</p>
+</blockquote>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@jinggengchen volumes]<span class="comment"># ll</span></span><br><span class="line">total 32</span><br><span class="line">drwxr-xr-x 3 root root  4096 Jun 23 10:57 2a7681a5c98084f7d2f160ebc042ff732eb816fd811f88892a1c14eb8dfbff0b</span><br><span class="line">drwxr-xr-x 3 root root  4096 Jun 23 10:57 f68a2cb650cee70014cfc91e52c49e3c2dbbddf3b78462b10e71d0ac71f0a585</span><br><span class="line">-rw------- 1 root root 32768 Jun 23 10:57 metadata.db</span><br><span class="line">[root@jinggengchen volumes]<span class="comment"># pwd</span></span><br><span class="line">/var/lib/docker/volumes</span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="六，DockerFile"   >
+          <a href="#六，DockerFile" class="heading-link"><i class="fas fa-link"></i></a>六，DockerFile</h3>
+      <p>DockerFile是用来构建docker镜像的文件，命令参数脚本</p>
+<p>构建步骤</p>
+<ul>
+<li>编写一个dockerfile文件</li>
+<li>docker build构建成为一个镜像</li>
+<li>docker run 运行镜像</li>
+<li>docker push 发布镜像(dockerHub，阿里云镜像服务)</li>
+</ul>
+<blockquote>
+<p>dockerfile命令指令</p>
+</blockquote>
+<p><img src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=268974649,2607019911&fm=26&gp=0.jpg" alt="docker"></p>
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">FROM 		<span class="comment"># 基础镜像 centos，一切从这里开始构建</span></span><br><span class="line">MAINTAINER   <span class="comment"># 镜像是谁写的</span></span><br><span class="line">RUN          <span class="comment"># 镜像构建的时候需要运行的命令</span></span><br><span class="line">ADD   		<span class="comment"># tomcat压缩包</span></span><br><span class="line">WORKDIR		<span class="comment"># 镜像的工作目录</span></span><br><span class="line">VOLUME 		<span class="comment"># 挂载到那个目录</span></span><br><span class="line">EXPOSE		<span class="comment"># 暴露端口</span></span><br><span class="line">CMD			<span class="comment"># 指定这个容器要运行时候要执行的命令，只有最后一个会生效</span></span><br><span class="line">ENTRYPOINT	<span class="comment"># 可以追加命令</span></span><br><span class="line">COPY		<span class="comment"># 将我们的文件拷贝到目录中</span></span><br><span class="line">ENV 		<span class="comment"># 构建的时候设置环境变量</span></span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight bash"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">FROM centos</span><br><span class="line">MAINTAINER jinggengchen&lt;1530201142@qq.com&gt;</span><br><span class="line">ENV MYPATH /usr/<span class="built_in">local</span></span><br><span class="line">WORKDIR <span class="variable">$MYPATH</span></span><br><span class="line"></span><br><span class="line">RUN yum -y install vim</span><br><span class="line">RUN yum -y install net-tools</span><br><span class="line"></span><br><span class="line">EXPOSE 80</span><br><span class="line">CMD <span class="built_in">echo</span> <span class="variable">$MYPATH</span></span><br><span class="line">CMD <span class="built_in">echo</span> <span class="string">&quot;---end---&quot;</span></span><br><span class="line">CMD /bin/bash</span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="七，Docker-Compose"   >
+          <a href="#七，Docker-Compose" class="heading-link"><i class="fas fa-link"></i></a>七，Docker-Compose</h3>
+      <blockquote>
+<p>之前，DockerFile build run 手动操作</p>
+<p>之前运行一个镜像，需要添加大量的参数</p>
+<p>Compose是用于定义和运行多容器Docker应用程序的工具。通过Compose，您可以使用YAML文件来配置应用程序的服务。然后，使用一个命令，就可以从配置中创建并启动所有服务。</p>
+</blockquote>
+<p>下载路径：</p>
+<p><span class="exturl"><a class="exturl__link"   target="_blank" rel="noopener" href="https://github.com/docker/compose/releases/tag/1.24.1" >https://github.com/docker/compose/releases/tag/1.24.1</a><span class="exturl__icon"><i class="fas fa-external-link-alt"></i></span></span></p>
+<p>使用Compose基本上是一个三步过程：</p>
+<ol>
+<li>使用定义您的应用环境，<code>Dockerfile</code>以便可以在任何地方复制。</li>
+<li>定义组成应用程序的服务，<code>docker-compose.yml</code> 以便它们可以在隔离的环境中一起运行。</li>
+<li>Run <code>docker-compose up</code>and Compose启动并运行您的整个应用程序。</li>
+</ol>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><div class="post-copyright copyright"><div class="copyright-author"><span class="copyright-author__name">本文作者: </span><span class="copyright-author__value"><a href="https://qponahuijiuy.github.io">Mutong</a></span></div><div class="copyright-link"><span class="copyright-link__name">本文链接: </span><span class="copyright-link__value"><a href="https://qponahuijiuy.github.io/posts/1d9fbb6a/">https://qponahuijiuy.github.io/posts/1d9fbb6a/</a></span></div><div class="copyright-notice"><span class="copyright-notice__name">版权声明: </span><span class="copyright-notice__value">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="external nofollow" target="_blank">BY-NC-SA</a> 许可协议。转载请注明出处！</span></div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://qponahuijiuy.github.io/tags/Docker/">Docker</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/posts/2ef729d1/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">【Go】变量,常量,基本数据类型</span></a></div></nav></footer></div></div><div class="comments" id="comments"><div id="disqus_thread"></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%EF%BC%8CDocker%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">
+          一，Docker概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%EF%BC%8CDevOps"><span class="toc-number">2.</span> <span class="toc-text">
+          二，DevOps</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%EF%BC%8CDocker%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-number">3.</span> <span class="toc-text">
+          三，Docker的安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%EF%BC%8CDocker%E5%91%BD%E4%BB%A4"><span class="toc-number">4.</span> <span class="toc-text">
+          四，Docker命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%EF%BC%8C%E5%AE%B9%E5%99%A8%E6%95%B0%E6%8D%AE%E5%8D%B7"><span class="toc-number">5.</span> <span class="toc-text">
+          五，容器数据卷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%EF%BC%8CDockerFile"><span class="toc-number">6.</span> <span class="toc-text">
+          六，DockerFile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%EF%BC%8CDocker-Compose"><span class="toc-number">7.</span> <span class="toc-text">
+          七，Docker-Compose</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/2.jpg" alt="avatar"></div><p class="sidebar-ov-author__text">work life balance</p></div><div class="sidebar-ov-social"><a class="sidebar-ov-social-item" href="https://github.com/qponahuijiuy" target="_blank" rel="noopener" data-popover="Github" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-github"></i></span></a><a class="sidebar-ov-social-item" href="1530201142" target="_blank" rel="noopener" data-popover="QQ" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-qq"></i></span></a></div><div class="sidebar-ov-state"><a class="sidebar-ov-state-item sidebar-ov-state-item--posts" href="/archives/"><div class="sidebar-ov-state-item__count">5</div><div class="sidebar-ov-state-item__name">归档</div></a><a class="sidebar-ov-state-item sidebar-ov-state-item--categories" href="/categories/"><div class="sidebar-ov-state-item__count">2</div><div class="sidebar-ov-state-item__name">分类</div></a><a class="sidebar-ov-state-item sidebar-ov-state-item--tags" href="/tags/"><div class="sidebar-ov-state-item__count">3</div><div class="sidebar-ov-state-item__name">标签</div></a></div><div class="sidebar-ov-cc"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener" data-popover="知识共享许可协议" data-popover-pos="up"><img src="/images/cc-by-nc-sa.svg"></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2021</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>Mutong All Rights Reserved</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v5.2.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.3.0</span></div><div class="busuanzi"><span class="busuanzi-siteuv"><span class="busuanzi-siteuv__icon"><i class="fas fa-user"></i></span><span class="busuanzi-siteuv__info">访问人数</span><span class="busuanzi-siteuv__value" id="busuanzi_value_site_uv"></span></span><span class="busuanzi-sitepv"><span class="busuanzi-siteuv__icon"><i class="fas fa-eye"></i></span><span class="busuanzi-siteuv__info">浏览总量</span><span class="busuanzi-siteuv__value" id="busuanzi_value_site_pv"></span></span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><div class="search-mask"></div><div class="search-popup"><span class="search-close"></span><div class="search-input"><input placeholder="搜索文章（支持多关键词，请用空格分隔）"><div class="search-btns">使用搜索：<span class="search-btns-item search-btns-item--google"><i class="fab fa-google"></i>谷歌</span><span class="search-btns-item search-btns-item--bing"><i></i>必应</span><span class="search-btns-item search-btns-item--baidu"><i></i>百度</span></div></div><div class="search-results"></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script>function initSearch() {
+  var isXML = true;
+  var search_path = 'search.xml';
+
+  if (!search_path) {
+    search_path = 'search.xml';
+  } else if (/json$/i.test(search_path)) {
+    isXML = false;
+  }
+
+  var path = '/' + search_path;
+  $.ajax({
+    url: path,
+    dataType: isXML ? 'xml' : 'json',
+    async: true,
+    success: function (res) {
+      var datas = isXML ? $('entry', res).map(function () {
+        // 将 XML 转为 JSON
+        return {
+          title: $('title', this).text(),
+          content: $('content', this).text(),
+          url: $('url', this).text()
+        };
+      }).get() : res;
+      var $input = $('.search-input input');
+      var $result = $('.search-results');
+      // 搜索对象（标题、内容）的权重，影响显示顺序
+      var WEIGHT = { title: 100, content: 1 };
+      var searchPost = function () {
+        var searchText = $input.val().toLowerCase().trim();
+        // 根据空白字符分隔关键字
+        var keywords = searchText.split(/[\s]+/);
+        // 搜索结果
+        var matchPosts = [];
+
+        // 有多个关键字时，将原文字整个保存下来
+        if (keywords.length > 1) {
+          keywords.push(searchText);
+        }
+        // 防止未输入字符时搜索
+        if (searchText.length > 0) {
+          datas.forEach(function (data) {
+            var isMatch  = false;
+            // 没有标题的文章使用预设的 i18n 变量代替
+            var title = (data.title && data.title.trim()) || '[ 文章无标题 ]';
+            var titleLower = title && title.toLowerCase();
+            // 删除 HTML 标签 和 所有空白字符
+            var content = data.content && data.content.replace(/<[^>]+>/g, '');
+            var contentLower = content && content.toLowerCase();
+            // 删除重复的 /
+            var postURL = data.url && decodeURI(data.url).replace(/\/{2,}/g, '/');
+            // 标题中匹配到的关键词
+            var titleHitSlice = [];
+            // 内容中匹配到的关键词
+            var contentHitSlice = [];
+
+            keywords.forEach(function (keyword) {
+              /**
+              * 获取匹配的关键词的索引
+              * @param {String} keyword 要匹配的关键字
+              * @param {String} text 原文字
+              * @param {Boolean} caseSensitive 是否区分大小写
+              * @param {Number} weight 匹配对象的权重。权重大的优先显示
+              * @return {Array}
+              */
+              function getIndexByword (word, text, caseSensitive, weight) {
+                if (!word || !text) {
+                  return [];
+                };
+
+                var startIndex = 0; // 每次匹配的开始索引
+                var index = -1;     // 匹配到的索引值
+                var result = [];    // 匹配结果
+
+                if (!caseSensitive) {
+                  word = word.toLowerCase();
+                  text = text.toLowerCase();
+                }
+
+                while((index = text.indexOf(word, startIndex)) !== -1) {
+                  var hasMatch = false;
+                  // 索引位置相同的关键词，保留长度较长的
+                  titleHitSlice.forEach(function (hit) {
+                    if (hit.index === index && hit.word.length < word.length) {
+                      hit.word = word;
+                      hasMatch = true;
+                    }
+                  });
+                  startIndex = index + word.length;
+                  !hasMatch && result.push({ index: index, word: word, weight: weight });
+                }
+                return result;
+              }
+              titleHitSlice = titleHitSlice.concat(getIndexByword(keyword, titleLower, false, WEIGHT.title));
+              contentHitSlice = contentHitSlice.concat(getIndexByword(keyword, contentLower, false, WEIGHT.content));
+            });
+
+            var hitTitle = titleHitSlice.length;
+            var hitContent = contentHitSlice.length;
+
+            if (hitTitle > 0 || hitContent > 0) {
+              isMatch = true;
+            }
+            if (isMatch) {
+              ;[titleHitSlice, contentHitSlice].forEach(function (hit) {
+                // 按照匹配文字的索引的递增顺序排序
+                hit.sort(function (left, right) {
+                  return left.index - right.index;
+                });
+              });
+              /**
+              * 给文本中匹配到的关键词添加标记，从而进行高亮显示
+              * @param {String} text 原文本
+              * @param {Array} hitSlice 匹配项的索引信息
+              * @param {Number} start 开始索引
+              * @param {Number} end 结束索引
+              * @return {String}
+              */
+              function highlightKeyword (text, hitSlice, start, end) {
+                if (!text || !hitSlice || !hitSlice.length) {
+                  return;
+                }
+
+                var result = '';
+                var startIndex = start;
+                var endIndex = end;
+                hitSlice.forEach(function (hit) {
+                  if (hit.index < startIndex) {
+                    return;
+                  }
+
+                  var hitWordEnd = hit.index + hit.word.length;
+                  result += text.slice(startIndex, hit.index);
+                  result += '<b>' + text.slice(hit.index, hitWordEnd) + '</b>';
+                  startIndex = hitWordEnd;
+                });
+                result += text.slice(startIndex, endIndex);
+                return result;
+              }
+
+              var postData = {};
+              // 文章总的搜索权重
+              var postWeight = titleHitSlice.length * WEIGHT.title + contentHitSlice.length * WEIGHT.content;
+              // 标记匹配关键词后的标题
+              var postTitle = highlightKeyword(title, titleHitSlice, 0, title.length) || title;
+              // 标记匹配关键词后的内容
+              var postContent;
+              // 显示内容的长度
+              var SHOW_WORD_LENGTH = 200;
+              // 命中关键词前的字符显示长度
+              var SHOW_WORD_FRONT_LENGTH = 20;
+              var SHOW_WORD_END_LENGTH = SHOW_WORD_LENGTH - SHOW_WORD_FRONT_LENGTH;
+
+              // 截取匹配的第一个字符，前后共 200 个字符来显示
+              if (contentHitSlice.length > 0) {
+                var firstIndex = contentHitSlice[0].index;
+                var start = firstIndex > SHOW_WORD_FRONT_LENGTH ? firstIndex - SHOW_WORD_FRONT_LENGTH : 0;
+                var end = firstIndex + SHOW_WORD_END_LENGTH;
+                postContent = highlightKeyword(content, contentHitSlice, start, end);
+              } else { // 未匹配到内容，直接截取前 200 个字符来显示
+                postContent = content.slice(0, SHOW_WORD_LENGTH);
+              }
+              postData.title = postTitle;
+              postData.content = postContent;
+              postData.url = postURL;
+              postData.weight = postWeight;
+              matchPosts.push(postData);
+            }
+          });
+        }
+
+        var resultInnerHtml = '';
+        if (matchPosts.length) {
+          // 按权重递增的顺序排序，使权重大的优先显示
+          matchPosts.sort(function (left, right) {
+            return right.weight - left.weight;
+          });
+          resultInnerHtml += '<ul>';
+          matchPosts.forEach(function (post) {
+            resultInnerHtml += '<li><a class="search-results-title" href="' + post.url + '">';
+            resultInnerHtml += post.title;
+            resultInnerHtml += '</a><div class="search-results-content">';
+            resultInnerHtml += post.content;
+            resultInnerHtml += '</div></li>';
+          });
+          resultInnerHtml += '</ul>';
+        } else {
+          resultInnerHtml += '<div class="search-results-none"><i class="far fa-meh"></i></div>';
+        }
+        $result.html(resultInnerHtml);
+      };
+      $input.on('input', searchPost);
+      $input.on('keyup', function (e) {
+        if (e.keyCode === Stun.utils.codeToKeyCode('Enter')) {
+          searchPost();
+        }
+      });
+    }
+  });
+}
+
+function closeSearch () {
+  $('body').css({ overflow: 'auto' });
+  $('.search-popup').css({ display: 'none' });
+  $('.search-mask').css({ display: 'none' });
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  Stun.utils.pjaxReloadLocalSearch = function () {
+    $('.header-nav-search').on('click', function (e) {
+      e.stopPropagation();
+      $('body').css('overflow', 'hidden');
+      $('.search-popup')
+        .velocity('stop')
+        .velocity('transition.expandIn', {
+          duration: 300,
+          complete: function () {
+            $('.search-popup input').focus();
+          }
+        });
+      $('.search-mask')
+        .velocity('stop')
+        .velocity('transition.fadeIn', {
+          duration: 300
+        });
+
+      initSearch();
+    });
+    $('.search-mask, .search-close').on('click', function () {
+      closeSearch();
+    });
+    $(document).on('keydown', function (e) {
+      // Escape <=> 27
+      if (e.keyCode === Stun.utils.codeToKeyCode('Escape')) {
+        closeSearch();
+      }
+    });
+  };
+
+  Stun.utils.pjaxReloadLocalSearch();
+}, false);
+
+function safeOpenUrl(url) {
+  var newTab = window.open();
+  newTab.opener = null;
+  newTab.location = url;
+}
+
+function extSearch(engine) {
+  var engines = {
+    google: 'https://www.google.com/search?q=',
+    bing: 'https://cn.bing.com/search?q=',
+    baidu: 'https://www.baidu.com/s?ie=UTF-8&wd=',
+  };
+  var host = window.location.host;
+  var query = $('.search-input input').val().toLowerCase().trim();
+  var uri = engines[engine] + query + ' site:' + host;
+
+  if (query) {
+    safeOpenUrl(uri);
+  } else {
+    Stun.utils.popAlert('warning', '请输入字符');
+  }
+}
+
+var assistSearchList = window.CONFIG.assistSearch;
+
+if (Array.isArray(assistSearchList)) {
+  assistSearchList.forEach(function (name) {
+    document.querySelector('.search-btns-item--' + name).addEventListener('click', function () {
+      extSearch(name);
+    }, false);
+  });
+}</script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"><script src="https://cdn.jsdelivr.net/npm/quicklink@1.0.1/dist/quicklink.umd.js"></script><script>function initQuicklink() {
+  quicklink({
+    timeout: '10000',
+    priority: true,
+    ignores: [uri => uri.includes('#'), uri => uri === 'https://qponahuijiuy.github.io/posts/1d9fbb6a/', /\/api\/?/,uri => uri.includes('.xml'),uri => uri.includes('.zip'),(uri, el) => el.hasAttribute('nofollow'),(uri, el) => el.hasAttribute('noprefetch')]
+  });
+}
+
+if (true || false) {
+  initQuicklink();
+} else {
+  window.addEventListener('DOMContentLoaded', initQuicklink, false);
+}</script><script src="https://cdn.jsdelivr.net/gh/sukkaw/busuanzi@latest/bsz.pure.mini.js" async></script></div><script data-pjax="">function loadDisqus () {
+  if (!document.getElementById('disqus_thread')) {
+    return;
+  }
+  if (window.DISQUS) {
+    DISQUS.reset({
+      reload: true,
+      config: function () {
+        this.page.url = 'https://qponahuijiuy.github.io/posts/1d9fbb6a/';
+        this.page.identifier = 'posts/1d9fbb6a/';
+        this.page.title = 'Docker基础';
+      }
+    });
+  } else {
+    var d = document;
+    var sc = d.createElement('script');
+    var se = d.createElement('script');
+
+    if (true) {
+      sc.src = 'https://.disqus.com/count.js';
+      sc.id = 'dsq-count-scr';
+      sc.async = true;
+      if (true) {
+        sc.setAttribute('data-pjax', '');
+      }
+      (d.head || d.body).appendChild(sc);
+    }
+    se.src = 'https://.disqus.com/embed.js';
+    (d.head || d.body).appendChild(se);
+  }
+}
+
+if (true) {
+  loadDisqus();
+} else {
+  window.addEventListener('DOMContentLoaded', loadDisqus, false);
+}</script><script src="/js/utils.js?v=2.3.0"></script><script src="/js/stun-boot.js?v=2.3.0"></script><script src="/js/scroll.js?v=2.3.0"></script><script src="/js/header.js?v=2.3.0"></script><script src="/js/sidebar.js?v=2.3.0"></script><script type="application/json" src="/search.xml"></script></body></html>
