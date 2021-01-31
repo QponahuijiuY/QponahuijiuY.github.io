@@ -1,0 +1,556 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.3.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.3.0" type="image/png" sizes="32x32"><meta name="description" content="1. 索引类型                           1.1 普通索引        这是一个最基本的索引类型，基于普通字段建立索引，没有任何限制。                     1.2 唯一索引        普通索引允许被索引的数据列包含重复的值  唯一索引就是刚好相反，不允许索引的数据列里面有重复的值。比如说身份证号，那么一定是一个唯一索引。因为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Mysql】索引类型优化策略">
+<meta property="og:url" content="https://qponahuijiuy.github.io/posts/94563abb/index.html">
+<meta property="og:site_name" content="Mutong Notes">
+<meta property="og:description" content="1. 索引类型                           1.1 普通索引        这是一个最基本的索引类型，基于普通字段建立索引，没有任何限制。                     1.2 唯一索引        普通索引允许被索引的数据列包含重复的值  唯一索引就是刚好相反，不允许索引的数据列里面有重复的值。比如说身份证号，那么一定是一个唯一索引。因为">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-31T15:53:46.746Z">
+<meta property="article:modified_time" content="2021-01-31T15:55:22.834Z">
+<meta property="article:author" content="Mutong">
+<meta property="article:tag" content="Mysql">
+<meta name="twitter:card" content="summary"><title>【Mysql】索引类型优化策略 | Mutong Notes</title><link ref="canonical" href="https://qponahuijiuy.github.io/posts/94563abb/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.3.0"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: ["google","bing","baidu"],
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":false},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"light","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":false},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 5.2.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/archives/"><span class="header-nav-menu-item__icon"><i class="fas fa-folder-open"></i></span><span class="header-nav-menu-item__text">归档</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/categories/"><span class="header-nav-menu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-menu-item__text">分类</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/tags/"><span class="header-nav-menu-item__icon"><i class="fas fa-tags"></i></span><span class="header-nav-menu-item__text">标签</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/reading/"><span class="header-nav-menu-item__icon"><i class="fas fa-book"></i></span><span class="header-nav-menu-item__text">阅读</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/about/"><span class="header-nav-menu-item__icon"><i class="fas fa-user"></i></span><span class="header-nav-menu-item__text">关于我</span></a></div></div><div class="header-nav-search"><span class="header-nav-search__icon"><i class="fas fa-search"></i></span><span class="header-nav-search__text">搜索</span></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">Mutong Notes</div><div class="header-banner-info__subtitle">愿一直遇到有趣的人和事</div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">【Mysql】索引类型优化策略</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2021-01-31</span></span><span class="post-meta-item post-meta-item--updatetime"><span class="post-meta-item__icon"><i class="far fa-calendar-check"></i></span><span class="post-meta-item__info">更新于</span><span class="post-meta-item__value">2021-01-31</span></span><span class="post-meta-item post-meta-item--visitors"><span class="post-meta-item__icon"><i class="fas fa-eye"></i></span><span class="post-meta-item__info">阅读次数</span><span class="post-meta-item__value" id="busuanzi_value_page_pv"></span></span></div></header><div class="post-body">
+        <h2 id="1-索引类型"   >
+          <a href="#1-索引类型" class="heading-link"><i class="fas fa-link"></i></a>1. 索引类型</h2>
+      
+        <h4 id="1-1-普通索引"   >
+          <a href="#1-1-普通索引" class="heading-link"><i class="fas fa-link"></i></a>1.1 普通索引</h4>
+      <ul>
+<li><p>这是一个最基本的索引类型，基于普通字段建立索引，没有任何限制。</p>
+
+        <h4 id="1-2-唯一索引"   >
+          <a href="#1-2-唯一索引" class="heading-link"><i class="fas fa-link"></i></a>1.2 唯一索引</h4>
+      </li>
+<li><p>普通索引允许被索引的数据列包含重复的值</p>
+</li>
+<li><p>唯一索引就是刚好相反，不允许索引的数据列里面有重复的值。比如说身份证号，那么一定是一个唯一索引。因为不可能有两个人的身份证号一模一样。</p>
+
+        <h4 id="1-3-主键索引"   >
+          <a href="#1-3-主键索引" class="heading-link"><i class="fas fa-link"></i></a>1.3 主键索引</h4>
+      </li>
+<li><p>主键索引，只要声明一个主键，系统会为主键自动建立索引</p>
+<a id="more"></a>
+
+        <h4 id="1-4-复合索引"   >
+          <a href="#1-4-复合索引" class="heading-link"><i class="fas fa-link"></i></a>1.4 复合索引</h4>
+      </li>
+<li><p>相对于单一索引来说，单一索引是索引只有一列，复合索引是在多列上面建立索引。</p>
+</li>
+<li><p>最左前缀匹配原则：当我的查询条件大于等于两个的时候，我需要给两个字段都加上索引，并且索引的顺序需要和查询条件的顺序一致。</p>
+</li>
+</ul>
+
+        <h4 id="1-5-覆盖索引"   >
+          <a href="#1-5-覆盖索引" class="heading-link"><i class="fas fa-link"></i></a>1.5 覆盖索引</h4>
+      <ul>
+<li>如果索引的叶子节点中已经包含了要查询的数据，那么就没有必要回表了，如果一个索引包含所有需要查询的字段的值，我们就称为“覆盖索引”。</li>
+<li>由于innodb的聚簇索引，覆盖索引对innodb表特别有用，innodb的二级索引在叶子节点存放了行的主键值，所以如果耳机主键能够覆盖查询，则可以避免对主键索引的二次查询。
+        <h4 id="1-6-全文索引"   >
+          <a href="#1-6-全文索引" class="heading-link"><i class="fas fa-link"></i></a>1.6 全文索引</h4>
+      </li>
+<li>全文索引查找的是文本中的关键词，查询操作在数据量比较少时，可以使用like模糊查询，但是对于大量的文本数据检索，效率很低。如果使用全文索引，查询速度会比like快很多倍。</li>
+<li><code>select * from user where match(name) against(&#39;AAA&#39;)</code></li>
+</ul>
+
+        <h4 id="1-7-索引下推"   >
+          <a href="#1-7-索引下推" class="heading-link"><i class="fas fa-link"></i></a>1.7 索引下推</h4>
+      <ul>
+<li>user（name，age） </li>
+<li>select * from user where name like ‘张%’ and age=10；</li>
+<li>在Mysql5.6之前，他的查找是这样的，因为我的查询条件是“张%”，那么我只能先用name = “张”查所有符合条件的主键，然后通过主键去查找age=10符合条件的行。</li>
+<li>Mysql5.6之后，使用了索引下推，也就是说，可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。</li>
+<li>对于这个查询，他先根据name=“张”找到符合条件的数据，再根据age=10再过滤。这就是回表下推。</li>
+</ul>
+
+        <h4 id="1-8-聚簇索引"   >
+          <a href="#1-8-聚簇索引" class="heading-link"><i class="fas fa-link"></i></a>1.8 聚簇索引</h4>
+      <ul>
+<li>聚簇索引和非聚簇索引：B+Tree的叶子节点存放主键索引值和行记录就属于聚簇索引</li>
+<li>如果索引值和行记录分开存放就属于非聚簇索引。</li>
+<li>聚簇索引的优点是：访问速度更快，此外使用覆盖索引扫描查询的时候可以直接使用叶子节点中的主键值。</li>
+<li>聚簇索引的缺点是：更新聚簇索引的代价很高</li>
+<li>一般使用自增id作为主键，是因为在插入操作的时候，主键的值是顺序的，会吧每一个行记录存储在上一条记录的后面，他是一种按照顺序的方式存储。如果使用uuid作为主键，无法简单的总把新的行记录插入到索引后面，而是要为新的行记录寻找合适的位置，会增加很多额外的工作。会产生大量的随机io。并且写入是乱序的，innodb需要不停的做页分裂操作，以便为新的行分配空间，页分裂会导致大量的数据。所以我们应该让主键按照自增的顺序插入数据。</li>
+</ul>
+
+        <h4 id="1-9-辅助索引"   >
+          <a href="#1-9-辅助索引" class="heading-link"><i class="fas fa-link"></i></a>1.9 辅助索引</h4>
+      <ul>
+<li>辅助索引其实就是普通索引</li>
+<li>B+Tree的叶子节点存放的是主键字段值就属于主键索引</li>
+<li>如果存放的是非主键值<br>就属于辅助索引</li>
+<li>当我们创建了一个非主键的列位索引的时候，会根据索引的列创建B+结构，叶子节点中存放的是索引列以及主键的信息。</li>
+</ul>
+
+        <h4 id="1-10-前缀索引"   >
+          <a href="#1-10-前缀索引" class="heading-link"><i class="fas fa-link"></i></a>1.10 前缀索引</h4>
+      <ul>
+<li> 一般用于给字符串加索引，比如说给字符串前6个字母加索引。但是使用前缀索引，我们需要定义好长度，就可以做到既节省空间，又不用额外增加太多的查询成本。</li>
+</ul>
+
+        <h2 id="1-索引原理"   >
+          <a href="#1-索引原理" class="heading-link"><i class="fas fa-link"></i></a>1. 索引原理</h2>
+      
+        <h4 id="2-1-B-树索引"   >
+          <a href="#2-1-B-树索引" class="heading-link"><i class="fas fa-link"></i></a>2.1 B+树索引</h4>
+      <ul>
+<li>非叶子节点不存储data数据，只存储索引值</li>
+<li>叶子节点包含了所有的所引值和data数据</li>
+<li>叶子节点用指针连接，提高区间访问效率。在进行范围查找的时候，只需要遍历范围内所有的节点和数据。</li>
+</ul>
+
+        <h4 id="2-2-hash索引"   >
+          <a href="#2-2-hash索引" class="heading-link"><i class="fas fa-link"></i></a>2.2 hash索引</h4>
+      <ul>
+<li>比如说memory存储引擎，他的索引类型是hash索引</li>
+<li>他会根据Where查询条件，通过hash函数，寻找指针，那么指针指向的就是所要查找的行记录。</li>
+<li>hash索引的缺点是：不能用户排序，不能用于范围查找，只能用户等值查询。并且，hash索引会存在hash冲突，出现hash冲突的时候，需要遍历连标中的所有行指针。优点是查询非常快。</li>
+</ul>
+
+        <h4 id="2-3-索引的优点"   >
+          <a href="#2-3-索引的优点" class="heading-link"><i class="fas fa-link"></i></a>2.3 索引的优点</h4>
+      <ul>
+<li>索引大大减少了服务器需要扫描的数据行</li>
+<li>索引可以帮助我们服务器避免排序和创建临时表</li>
+<li>索引可以将随机io变成顺序io</li>
+</ul>
+
+        <h2 id="3-索引优化策略"   >
+          <a href="#3-索引优化策略" class="heading-link"><i class="fas fa-link"></i></a>3. 索引优化策略</h2>
+      <ul>
+<li>不要在字段开头使用模糊查询，比如 like “%aaa”，一定走全盘扫描，不要吧%放在前面，如果真的要吧%放在前面，就需要考虑数据量，几千条那没事，不用花里胡哨的，可以吧%放前面。但是数据量特别大，使用instr来匹配。</li>
+<li>避免使用非等值查询，比如 in &lt;&gt; 这种情况，不会走索引。可以用between</li>
+<li>避免使用or，可以使用union all</li>
+<li>每一个字段尽可能设置默认值0，不要对null进行判断，不会走索引</li>
+<li>where 后面字段的类型需要与db一致，比如db里面是varchar，where后面是int，会有一个隐式转换，有开销。</li>
+<li>最左前缀匹配原则</li>
+<li>order by 条件要与where中的条件一致</li>
+<li>where 条件子句需要建立索引</li>
+</ul>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><div class="post-copyright copyright"><div class="copyright-author"><span class="copyright-author__name">本文作者: </span><span class="copyright-author__value"><a href="https://qponahuijiuy.github.io">Mutong</a></span></div><div class="copyright-link"><span class="copyright-link__name">本文链接: </span><span class="copyright-link__value"><a href="https://qponahuijiuy.github.io/posts/94563abb/">https://qponahuijiuy.github.io/posts/94563abb/</a></span></div><div class="copyright-notice"><span class="copyright-notice__name">版权声明: </span><span class="copyright-notice__value">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="external nofollow" target="_blank">BY-NC-SA</a> 许可协议。转载请注明出处！</span></div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://qponahuijiuy.github.io/tags/Mysql/">Mysql</a></span></div><nav class="post-paginator paginator"><div class="paginator-next"><a class="paginator-next__link" href="/posts/268bbe0f/"><span class="paginator-prev__text">【Mysql】数据类型范式相关</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div><div class="comments" id="comments"><div id="disqus_thread"></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%B4%A2%E5%BC%95%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">
+          1. 索引类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-%E6%99%AE%E9%80%9A%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.1.</span> <span class="toc-text">
+          1.1 普通索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.2.</span> <span class="toc-text">
+          1.2 唯一索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.3.</span> <span class="toc-text">
+          1.3 主键索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-4-%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.4.</span> <span class="toc-text">
+          1.4 复合索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-5-%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.5.</span> <span class="toc-text">
+          1.5 覆盖索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-6-%E5%85%A8%E6%96%87%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.6.</span> <span class="toc-text">
+          1.6 全文索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-7-%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8"><span class="toc-number">1.0.7.</span> <span class="toc-text">
+          1.7 索引下推</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-8-%E8%81%9A%E7%B0%87%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.8.</span> <span class="toc-text">
+          1.8 聚簇索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-9-%E8%BE%85%E5%8A%A9%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.9.</span> <span class="toc-text">
+          1.9 辅助索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-10-%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95"><span class="toc-number">1.0.10.</span> <span class="toc-text">
+          1.10 前缀索引</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">
+          1. 索引原理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-B-%E6%A0%91%E7%B4%A2%E5%BC%95"><span class="toc-number">2.0.1.</span> <span class="toc-text">
+          2.1 B+树索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-hash%E7%B4%A2%E5%BC%95"><span class="toc-number">2.0.2.</span> <span class="toc-text">
+          2.2 hash索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-number">2.0.3.</span> <span class="toc-text">
+          2.3 索引的优点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">
+          3. 索引优化策略</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/2.jpg" alt="avatar"></div><p class="sidebar-ov-author__text">work life balance</p></div><div class="sidebar-ov-social"><a class="sidebar-ov-social-item" href="https://github.com/qponahuijiuy" target="_blank" rel="noopener" data-popover="Github" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-github"></i></span></a><a class="sidebar-ov-social-item" href="1530201142" target="_blank" rel="noopener" data-popover="QQ" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-qq"></i></span></a></div><div class="sidebar-ov-state"><a class="sidebar-ov-state-item sidebar-ov-state-item--posts" href="/archives/"><div class="sidebar-ov-state-item__count">6</div><div class="sidebar-ov-state-item__name">归档</div></a><a class="sidebar-ov-state-item sidebar-ov-state-item--categories" href="/categories/"><div class="sidebar-ov-state-item__count">2</div><div class="sidebar-ov-state-item__name">分类</div></a><a class="sidebar-ov-state-item sidebar-ov-state-item--tags" href="/tags/"><div class="sidebar-ov-state-item__count">3</div><div class="sidebar-ov-state-item__name">标签</div></a></div><div class="sidebar-ov-cc"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener" data-popover="知识共享许可协议" data-popover-pos="up"><img src="/images/cc-by-nc-sa.svg"></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2021</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>Mutong All Rights Reserved</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v5.2.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.3.0</span></div><div class="busuanzi"><span class="busuanzi-siteuv"><span class="busuanzi-siteuv__icon"><i class="fas fa-user"></i></span><span class="busuanzi-siteuv__info">访问人数</span><span class="busuanzi-siteuv__value" id="busuanzi_value_site_uv"></span></span><span class="busuanzi-sitepv"><span class="busuanzi-siteuv__icon"><i class="fas fa-eye"></i></span><span class="busuanzi-siteuv__info">浏览总量</span><span class="busuanzi-siteuv__value" id="busuanzi_value_site_pv"></span></span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><div class="search-mask"></div><div class="search-popup"><span class="search-close"></span><div class="search-input"><input placeholder="搜索文章（支持多关键词，请用空格分隔）"><div class="search-btns">使用搜索：<span class="search-btns-item search-btns-item--google"><i class="fab fa-google"></i>谷歌</span><span class="search-btns-item search-btns-item--bing"><i></i>必应</span><span class="search-btns-item search-btns-item--baidu"><i></i>百度</span></div></div><div class="search-results"></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script>function initSearch() {
+  var isXML = true;
+  var search_path = 'search.xml';
+
+  if (!search_path) {
+    search_path = 'search.xml';
+  } else if (/json$/i.test(search_path)) {
+    isXML = false;
+  }
+
+  var path = '/' + search_path;
+  $.ajax({
+    url: path,
+    dataType: isXML ? 'xml' : 'json',
+    async: true,
+    success: function (res) {
+      var datas = isXML ? $('entry', res).map(function () {
+        // 将 XML 转为 JSON
+        return {
+          title: $('title', this).text(),
+          content: $('content', this).text(),
+          url: $('url', this).text()
+        };
+      }).get() : res;
+      var $input = $('.search-input input');
+      var $result = $('.search-results');
+      // 搜索对象（标题、内容）的权重，影响显示顺序
+      var WEIGHT = { title: 100, content: 1 };
+      var searchPost = function () {
+        var searchText = $input.val().toLowerCase().trim();
+        // 根据空白字符分隔关键字
+        var keywords = searchText.split(/[\s]+/);
+        // 搜索结果
+        var matchPosts = [];
+
+        // 有多个关键字时，将原文字整个保存下来
+        if (keywords.length > 1) {
+          keywords.push(searchText);
+        }
+        // 防止未输入字符时搜索
+        if (searchText.length > 0) {
+          datas.forEach(function (data) {
+            var isMatch  = false;
+            // 没有标题的文章使用预设的 i18n 变量代替
+            var title = (data.title && data.title.trim()) || '[ 文章无标题 ]';
+            var titleLower = title && title.toLowerCase();
+            // 删除 HTML 标签 和 所有空白字符
+            var content = data.content && data.content.replace(/<[^>]+>/g, '');
+            var contentLower = content && content.toLowerCase();
+            // 删除重复的 /
+            var postURL = data.url && decodeURI(data.url).replace(/\/{2,}/g, '/');
+            // 标题中匹配到的关键词
+            var titleHitSlice = [];
+            // 内容中匹配到的关键词
+            var contentHitSlice = [];
+
+            keywords.forEach(function (keyword) {
+              /**
+              * 获取匹配的关键词的索引
+              * @param {String} keyword 要匹配的关键字
+              * @param {String} text 原文字
+              * @param {Boolean} caseSensitive 是否区分大小写
+              * @param {Number} weight 匹配对象的权重。权重大的优先显示
+              * @return {Array}
+              */
+              function getIndexByword (word, text, caseSensitive, weight) {
+                if (!word || !text) {
+                  return [];
+                };
+
+                var startIndex = 0; // 每次匹配的开始索引
+                var index = -1;     // 匹配到的索引值
+                var result = [];    // 匹配结果
+
+                if (!caseSensitive) {
+                  word = word.toLowerCase();
+                  text = text.toLowerCase();
+                }
+
+                while((index = text.indexOf(word, startIndex)) !== -1) {
+                  var hasMatch = false;
+                  // 索引位置相同的关键词，保留长度较长的
+                  titleHitSlice.forEach(function (hit) {
+                    if (hit.index === index && hit.word.length < word.length) {
+                      hit.word = word;
+                      hasMatch = true;
+                    }
+                  });
+                  startIndex = index + word.length;
+                  !hasMatch && result.push({ index: index, word: word, weight: weight });
+                }
+                return result;
+              }
+              titleHitSlice = titleHitSlice.concat(getIndexByword(keyword, titleLower, false, WEIGHT.title));
+              contentHitSlice = contentHitSlice.concat(getIndexByword(keyword, contentLower, false, WEIGHT.content));
+            });
+
+            var hitTitle = titleHitSlice.length;
+            var hitContent = contentHitSlice.length;
+
+            if (hitTitle > 0 || hitContent > 0) {
+              isMatch = true;
+            }
+            if (isMatch) {
+              ;[titleHitSlice, contentHitSlice].forEach(function (hit) {
+                // 按照匹配文字的索引的递增顺序排序
+                hit.sort(function (left, right) {
+                  return left.index - right.index;
+                });
+              });
+              /**
+              * 给文本中匹配到的关键词添加标记，从而进行高亮显示
+              * @param {String} text 原文本
+              * @param {Array} hitSlice 匹配项的索引信息
+              * @param {Number} start 开始索引
+              * @param {Number} end 结束索引
+              * @return {String}
+              */
+              function highlightKeyword (text, hitSlice, start, end) {
+                if (!text || !hitSlice || !hitSlice.length) {
+                  return;
+                }
+
+                var result = '';
+                var startIndex = start;
+                var endIndex = end;
+                hitSlice.forEach(function (hit) {
+                  if (hit.index < startIndex) {
+                    return;
+                  }
+
+                  var hitWordEnd = hit.index + hit.word.length;
+                  result += text.slice(startIndex, hit.index);
+                  result += '<b>' + text.slice(hit.index, hitWordEnd) + '</b>';
+                  startIndex = hitWordEnd;
+                });
+                result += text.slice(startIndex, endIndex);
+                return result;
+              }
+
+              var postData = {};
+              // 文章总的搜索权重
+              var postWeight = titleHitSlice.length * WEIGHT.title + contentHitSlice.length * WEIGHT.content;
+              // 标记匹配关键词后的标题
+              var postTitle = highlightKeyword(title, titleHitSlice, 0, title.length) || title;
+              // 标记匹配关键词后的内容
+              var postContent;
+              // 显示内容的长度
+              var SHOW_WORD_LENGTH = 200;
+              // 命中关键词前的字符显示长度
+              var SHOW_WORD_FRONT_LENGTH = 20;
+              var SHOW_WORD_END_LENGTH = SHOW_WORD_LENGTH - SHOW_WORD_FRONT_LENGTH;
+
+              // 截取匹配的第一个字符，前后共 200 个字符来显示
+              if (contentHitSlice.length > 0) {
+                var firstIndex = contentHitSlice[0].index;
+                var start = firstIndex > SHOW_WORD_FRONT_LENGTH ? firstIndex - SHOW_WORD_FRONT_LENGTH : 0;
+                var end = firstIndex + SHOW_WORD_END_LENGTH;
+                postContent = highlightKeyword(content, contentHitSlice, start, end);
+              } else { // 未匹配到内容，直接截取前 200 个字符来显示
+                postContent = content.slice(0, SHOW_WORD_LENGTH);
+              }
+              postData.title = postTitle;
+              postData.content = postContent;
+              postData.url = postURL;
+              postData.weight = postWeight;
+              matchPosts.push(postData);
+            }
+          });
+        }
+
+        var resultInnerHtml = '';
+        if (matchPosts.length) {
+          // 按权重递增的顺序排序，使权重大的优先显示
+          matchPosts.sort(function (left, right) {
+            return right.weight - left.weight;
+          });
+          resultInnerHtml += '<ul>';
+          matchPosts.forEach(function (post) {
+            resultInnerHtml += '<li><a class="search-results-title" href="' + post.url + '">';
+            resultInnerHtml += post.title;
+            resultInnerHtml += '</a><div class="search-results-content">';
+            resultInnerHtml += post.content;
+            resultInnerHtml += '</div></li>';
+          });
+          resultInnerHtml += '</ul>';
+        } else {
+          resultInnerHtml += '<div class="search-results-none"><i class="far fa-meh"></i></div>';
+        }
+        $result.html(resultInnerHtml);
+      };
+      $input.on('input', searchPost);
+      $input.on('keyup', function (e) {
+        if (e.keyCode === Stun.utils.codeToKeyCode('Enter')) {
+          searchPost();
+        }
+      });
+    }
+  });
+}
+
+function closeSearch () {
+  $('body').css({ overflow: 'auto' });
+  $('.search-popup').css({ display: 'none' });
+  $('.search-mask').css({ display: 'none' });
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  Stun.utils.pjaxReloadLocalSearch = function () {
+    $('.header-nav-search').on('click', function (e) {
+      e.stopPropagation();
+      $('body').css('overflow', 'hidden');
+      $('.search-popup')
+        .velocity('stop')
+        .velocity('transition.expandIn', {
+          duration: 300,
+          complete: function () {
+            $('.search-popup input').focus();
+          }
+        });
+      $('.search-mask')
+        .velocity('stop')
+        .velocity('transition.fadeIn', {
+          duration: 300
+        });
+
+      initSearch();
+    });
+    $('.search-mask, .search-close').on('click', function () {
+      closeSearch();
+    });
+    $(document).on('keydown', function (e) {
+      // Escape <=> 27
+      if (e.keyCode === Stun.utils.codeToKeyCode('Escape')) {
+        closeSearch();
+      }
+    });
+  };
+
+  Stun.utils.pjaxReloadLocalSearch();
+}, false);
+
+function safeOpenUrl(url) {
+  var newTab = window.open();
+  newTab.opener = null;
+  newTab.location = url;
+}
+
+function extSearch(engine) {
+  var engines = {
+    google: 'https://www.google.com/search?q=',
+    bing: 'https://cn.bing.com/search?q=',
+    baidu: 'https://www.baidu.com/s?ie=UTF-8&wd=',
+  };
+  var host = window.location.host;
+  var query = $('.search-input input').val().toLowerCase().trim();
+  var uri = engines[engine] + query + ' site:' + host;
+
+  if (query) {
+    safeOpenUrl(uri);
+  } else {
+    Stun.utils.popAlert('warning', '请输入字符');
+  }
+}
+
+var assistSearchList = window.CONFIG.assistSearch;
+
+if (Array.isArray(assistSearchList)) {
+  assistSearchList.forEach(function (name) {
+    document.querySelector('.search-btns-item--' + name).addEventListener('click', function () {
+      extSearch(name);
+    }, false);
+  });
+}</script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"><script src="https://cdn.jsdelivr.net/npm/quicklink@1.0.1/dist/quicklink.umd.js"></script><script>function initQuicklink() {
+  quicklink({
+    timeout: '10000',
+    priority: true,
+    ignores: [uri => uri.includes('#'), uri => uri === 'https://qponahuijiuy.github.io/posts/94563abb/', /\/api\/?/,uri => uri.includes('.xml'),uri => uri.includes('.zip'),(uri, el) => el.hasAttribute('nofollow'),(uri, el) => el.hasAttribute('noprefetch')]
+  });
+}
+
+if (true || false) {
+  initQuicklink();
+} else {
+  window.addEventListener('DOMContentLoaded', initQuicklink, false);
+}</script><script src="https://cdn.jsdelivr.net/gh/sukkaw/busuanzi@latest/bsz.pure.mini.js" async></script></div><script data-pjax="">function loadDisqus () {
+  if (!document.getElementById('disqus_thread')) {
+    return;
+  }
+  if (window.DISQUS) {
+    DISQUS.reset({
+      reload: true,
+      config: function () {
+        this.page.url = 'https://qponahuijiuy.github.io/posts/94563abb/';
+        this.page.identifier = 'posts/94563abb/';
+        this.page.title = '【Mysql】索引类型优化策略';
+      }
+    });
+  } else {
+    var d = document;
+    var sc = d.createElement('script');
+    var se = d.createElement('script');
+
+    if (true) {
+      sc.src = 'https://.disqus.com/count.js';
+      sc.id = 'dsq-count-scr';
+      sc.async = true;
+      if (true) {
+        sc.setAttribute('data-pjax', '');
+      }
+      (d.head || d.body).appendChild(sc);
+    }
+    se.src = 'https://.disqus.com/embed.js';
+    (d.head || d.body).appendChild(se);
+  }
+}
+
+if (true) {
+  loadDisqus();
+} else {
+  window.addEventListener('DOMContentLoaded', loadDisqus, false);
+}</script><script src="/js/utils.js?v=2.3.0"></script><script src="/js/stun-boot.js?v=2.3.0"></script><script src="/js/scroll.js?v=2.3.0"></script><script src="/js/header.js?v=2.3.0"></script><script src="/js/sidebar.js?v=2.3.0"></script><script type="application/json" src="/search.xml"></script></body></html>
